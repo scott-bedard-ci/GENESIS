@@ -796,6 +796,36 @@ export const darkBackgroundDecorator = (Story: any) => (
 }
 ```
 
+## Reference Component Implementation
+
+### 🚨 COPY REFERENCE IMPLEMENTATION FILES
+
+The reference component serves as the gold standard template for ALL components. Copy the complete reference implementation from GENESIS-V3:
+
+```bash
+# Create the reference directory
+mkdir -p src/_reference
+
+# Copy all reference files
+cp GENESIS-V3/reference-implementation/* src/_reference/
+```
+
+**CRITICAL**: These files demonstrate the EXACT patterns every component must follow:
+- Complete 7-file structure
+- CVA + Tailwind architecture  
+- Comprehensive documentation format
+- Test organization patterns
+- Story structure templates
+
+These files are:
+- `ReferenceComponent.tsx` - Perfect CVA + Tailwind implementation
+- `ReferenceComponent.figmaframes.md` - Figma documentation template
+- `ReferenceComponent.stories.tsx` - Story structure template
+- `ReferenceComponent.test.tsx` - Test organization template
+- `ReferenceComponent.tokens.md` - Token documentation template
+- `index.ts` - Export patterns
+- `README.md` - Reference documentation
+
 ## Index Files
 
 ### 🚨 CREATE THIS FILE: `src/index.ts`
@@ -883,6 +913,181 @@ export {};
 export {};
 ```
 
+## Storybook Welcome Page
+
+### 🚨 CREATE THIS FILE: `src/Welcome.stories.tsx`
+```typescript
+import type { Meta, StoryObj } from '@storybook/react';
+
+const Welcome = () => {
+  return (
+    <div className="max-w-4xl mx-auto p-8 font-sans">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          Welcome to Pigment Genesis
+        </h1>
+        <p className="text-xl text-gray-600 mb-8">
+          A comprehensive design system for CustomInk built with React, TypeScript, and Tailwind CSS
+        </p>
+        <div className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg font-medium">
+          🎨 Design System v1.0.0
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-8 mb-12">
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-gray-900 mb-3">
+            🧱 Atomic Design
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Components are organized using atomic design methodology:
+          </p>
+          <ul className="space-y-2 text-gray-600">
+            <li>• <strong>Atoms:</strong> Basic building blocks (buttons, inputs)</li>
+            <li>• <strong>Molecules:</strong> Simple combinations of atoms</li>
+            <li>• <strong>Organisms:</strong> Complex UI sections</li>
+            <li>• <strong>Templates:</strong> Page-level layouts</li>
+          </ul>
+        </div>
+
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-gray-900 mb-3">
+            🎯 Design Tokens
+          </h2>
+          <p className="text-gray-600 mb-4">
+            All components use design tokens extracted directly from Figma:
+          </p>
+          <ul className="space-y-2 text-gray-600">
+            <li>• Colors, spacing, and typography from Figma</li>
+            <li>• Instant rebrand capability</li>
+            <li>• 100% design consistency</li>
+            <li>• CVA + Tailwind architecture</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+        <h2 className="text-xl font-semibold text-blue-900 mb-3">
+          🚀 Getting Started
+        </h2>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <h3 className="font-medium text-blue-800 mb-2">1. Browse Components</h3>
+            <p className="text-blue-700 text-sm">
+              Explore the component library in the sidebar
+            </p>
+          </div>
+          <div>
+            <h3 className="font-medium text-blue-800 mb-2">2. View Documentation</h3>
+            <p className="text-blue-700 text-sm">
+              Each component includes usage guidelines and examples
+            </p>
+          </div>
+          <div>
+            <h3 className="font-medium text-blue-800 mb-2">3. Interactive Controls</h3>
+            <p className="text-blue-700 text-sm">
+              Use the Controls panel to test component variations
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-8">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-3">
+            📚 Documentation
+          </h2>
+          <ul className="space-y-2 text-gray-600">
+            <li>• Component usage guidelines</li>
+            <li>• Accessibility requirements</li>
+            <li>• Design principles</li>
+            <li>• Code examples</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-3">
+            🔧 Development Tools
+          </h2>
+          <ul className="space-y-2 text-gray-600">
+            <li>• TypeScript for type safety</li>
+            <li>• Jest for testing</li>
+            <li>• ESLint for code quality</li>
+            <li>• Accessibility testing with axe-core</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-12 text-center text-gray-500">
+        <p>Built with ❤️ by the CustomInk Design System Team</p>
+      </div>
+    </div>
+  );
+};
+
+const meta: Meta<typeof Welcome> = {
+  title: 'Welcome',
+  component: Welcome,
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      page: () => (
+        <div className="prose max-w-none">
+          <h1>Pigment Genesis Design System</h1>
+          <p>
+            Welcome to the Pigment Genesis Design System documentation. This design system provides
+            a comprehensive library of reusable components built with React, TypeScript, and Tailwind CSS.
+          </p>
+          
+          <h2>Key Features</h2>
+          <ul>
+            <li><strong>Figma Integration:</strong> All components are built from Figma designs with extracted design tokens</li>
+            <li><strong>Atomic Design:</strong> Components organized using atomic design methodology</li>
+            <li><strong>Accessibility First:</strong> All components meet WCAG accessibility standards</li>
+            <li><strong>Type Safe:</strong> Full TypeScript support with comprehensive type definitions</li>
+            <li><strong>Testing:</strong> Comprehensive test coverage including accessibility tests</li>
+          </ul>
+
+          <h2>Architecture</h2>
+          <p>
+            Components use Class Variance Authority (CVA) with Tailwind CSS classes that reference design tokens.
+            This architecture ensures consistency and enables instant rebranding through design token updates.
+          </p>
+
+          <h2>Getting Started</h2>
+          <p>
+            Browse the component library using the sidebar navigation. Each component includes:
+          </p>
+          <ul>
+            <li>Interactive examples with configurable controls</li>
+            <li>Usage guidelines and best practices</li>
+            <li>Accessibility information</li>
+            <li>Code examples and API documentation</li>
+          </ul>
+        </div>
+      ),
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof Welcome>;
+
+export const Default: Story = {};
+```
+
+### 🚨 UPDATE STORYBOOK CONFIG: `.storybook/main.ts`
+Update the stories array to prioritize the Welcome page:
+```typescript
+const config: StorybookConfig = {
+  stories: [
+    '../src/Welcome.stories.tsx',
+    '../src/**/*.stories.@(js|jsx|ts|tsx)',
+  ],
+  // ... rest of config
+};
+```
+
 ## ✅ Source Files Complete
 
 You should now have created:
@@ -892,8 +1097,9 @@ You should now have created:
 - Global CSS styles with design token imports
 - Main index files for clean exports
 - Component category index files (atoms, molecules, organisms)
+- **Storybook Welcome page with comprehensive documentation**
 
-Total files created in this step: **9 files**
+Total files created in this step: **10 files**
 
 ## 📋 Next Step
 

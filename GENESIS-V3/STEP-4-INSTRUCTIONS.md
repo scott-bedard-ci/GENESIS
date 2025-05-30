@@ -698,12 +698,25 @@ When the user says they're ready to add a new component:
    - **FOLLOW the exact same pattern** as ReferenceComponent.tsx in the design system
    - **CONSISTENCY CHECK**: Every new component must match the architectural style
 11. **Build React components systematically** with extracted specifications (zero assumptions)
-12. **🚨 MANDATORY: Automated visual verification**
-   - **IMMEDIATELY** run `npm run claude-visual-verify ComponentName`
-   - **IMMEDIATELY** analyze captured screenshots using Read tool
-   - **IMMEDIATELY** compare against Figma designs for pixel accuracy
-   - **IMMEDIATELY** verify design token usage and visual quality
-   - **REQUIRED**: 95%+ pixel accuracy before proceeding
+12. **🚨 MANDATORY: IMMEDIATE VALIDATION AFTER BUILDING**
+   - **STEP 1: ARCHITECTURAL VALIDATION** 
+     - **IMMEDIATELY** run `npm run validate:architecture` after creating component
+     - **MUST achieve 100% compliance** before proceeding to next step
+     - **FIX ALL VIOLATIONS** found (hardcoded colors, missing CVA, etc.)
+     - **RE-RUN VALIDATION** until perfect compliance achieved
+   - **STEP 2: BUILD VERIFICATION**
+     - **IMMEDIATELY** run `npm run build` to verify component compiles
+     - **FIX ANY BUILD ERRORS** before proceeding
+   - **STEP 3: TYPE CHECKING**
+     - **IMMEDIATELY** run `npx tsc --noEmit` to verify TypeScript compliance
+     - **RESOLVE ALL TYPE ERRORS** before proceeding
+   - **STEP 4: AUTOMATED VISUAL VERIFICATION**
+     - **IMMEDIATELY** run `npm run claude-visual-verify ComponentName`
+     - **IMMEDIATELY** analyze captured screenshots using Read tool
+     - **IMMEDIATELY** compare against Figma designs for pixel accuracy
+     - **IMMEDIATELY** verify design token usage and visual quality
+     - **REQUIRED**: 95%+ pixel accuracy before proceeding
+   - **🚨 COMPONENT IS NOT COMPLETE UNTIL ALL VALIDATIONS PASS**
 
 ### 4. Code Quality & Consistency
 - Maintain **consistent naming conventions** (PascalCase for components, camelCase for props)
@@ -830,11 +843,21 @@ className="bg-neutral-bg-primary text-interactive-text-default"
 5. **Design Analysis**: Use Figma MCP to analyze designs and extract specifications
 6. **Component Planning**: Determine atomic design level and component structure
 7. **Implementation**: Build React component using extracted design tokens exclusively
-8. **Test Development**: Write comprehensive unit tests, accessibility tests, and interaction tests
-9. **Documentation**: Write component docs and Storybook stories
-10. **Quality Assurance**: Run all tests and ensure component meets standards
+8. **🚨 MANDATORY IMMEDIATE VALIDATION**: After building component, IMMEDIATELY run:
+   - `npm run validate:architecture` (MUST achieve 100% compliance)
+   - `npm run build` (MUST compile without errors)
+   - `npx tsc --noEmit` (MUST pass type checking)
+   - `npm run claude-visual-verify ComponentName` (MUST achieve 95%+ pixel accuracy)
+   - **Component is NOT complete until ALL validations pass**
+9. **Test Development**: Write comprehensive unit tests, accessibility tests, and interaction tests
+10. **Documentation**: Write component docs and Storybook stories
+11. **Final Quality Assurance**: Run all remaining tests and ensure component meets standards
 
 ### Quality Assurance
+- **🚨 MANDATORY: 100% Architectural Compliance** - Every component MUST pass `npm run validate:architecture`
+- **🚨 MANDATORY: Build Success** - Every component MUST compile without errors
+- **🚨 MANDATORY: Type Safety** - Every component MUST pass TypeScript checking
+- **🚨 MANDATORY: Visual Fidelity** - Every component MUST achieve 95%+ pixel accuracy vs Figma
 - Every component must have TypeScript interfaces extending shared base types
 - Every component must have comprehensive tests using shared testing utilities
 - Every component must have accessibility tests using shared a11y patterns

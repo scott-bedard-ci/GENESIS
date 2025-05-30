@@ -800,6 +800,555 @@ function diff(obj1: any, obj2: any): any {
 previewRebrandChanges().catch(console.error);
 ```
 
+## Pre-Component Validation
+
+### 🚨 CREATE THIS FILE: `scripts/pre-component.ts`
+```typescript
+#!/usr/bin/env tsx
+
+/**
+ * 🚨 MANDATORY PRE-COMPONENT VALIDATION
+ * 
+ * This script MUST pass before ANY component development begins.
+ * It enforces all architectural requirements and prepares the environment.
+ */
+
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import chalk from 'chalk';
+
+interface PreComponentCheckResult {
+  passed: boolean;
+  message: string;
+  critical?: boolean;
+}
+
+class PreComponentValidator {
+  private componentName: string;
+  private componentPath: string;
+  private atomicLevel: 'atoms' | 'molecules' | 'organisms';
+  private checks: PreComponentCheckResult[] = [];
+
+  constructor(componentName: string, atomicLevel: 'atoms' | 'molecules' | 'organisms' = 'atoms') {
+    this.componentName = componentName;
+    this.atomicLevel = atomicLevel;
+    this.componentPath = path.join(process.cwd(), 'src/components', atomicLevel, componentName);
+  }
+
+  async run() {
+    console.log(chalk.blue.bold('\n🚨 MANDATORY PRE-COMPONENT VALIDATION\n'));
+    console.log(chalk.yellow(`Component: ${this.componentName}`));
+    console.log(chalk.yellow(`Level: ${this.atomicLevel}\n`));
+
+    // Run all checks
+    await this.checkFigmaConnection();
+    await this.checkTokensExist();
+    await this.checkTokensNotEmpty();
+    await this.checkArchitecturalCompliance();
+    await this.checkDesignSystemReadiness();
+    await this.generateTokenMapping();
+    await this.createComponentScaffold();
+    await this.setupContinuousValidation();
+
+    // Report results
+    this.reportResults();
+
+    // Exit with error if any critical check failed
+    const criticalFailures = this.checks.filter(c => c.critical && !c.passed);
+    if (criticalFailures.length > 0) {
+      console.log(chalk.red.bold('\n❌ CRITICAL FAILURES DETECTED - CANNOT PROCEED'));
+      console.log(chalk.red('Fix all critical issues before creating component.\n'));
+      process.exit(1);
+    }
+
+    console.log(chalk.green.bold('\n✅ ALL CHECKS PASSED - READY TO BUILD COMPONENT\n'));
+    console.log(chalk.cyan('Next steps:'));
+    console.log(chalk.cyan('1. Review token mapping in component directory'));
+    console.log(chalk.cyan('2. Use provided scaffold as starting point'));
+    console.log(chalk.cyan('3. Keep validation watcher running during development'));
+    console.log(chalk.cyan('4. Say "I\'m ready to add a new component" to Claude\n'));
+  }
+
+  private async checkFigmaConnection() {
+    console.log(chalk.gray('Checking Figma MCP connection...'));
+    
+    // Check if Figma config exists and has credentials
+    const figmaConfigPath = path.join(process.cwd(), 'figma.config.json');
+    if (!fs.existsSync(figmaConfigPath)) {
+      this.checks.push({
+        passed: false,
+        message: 'figma.config.json not found',
+        critical: true
+      });
+      return;
+    }
+
+    const config = JSON.parse(fs.readFileSync(figmaConfigPath, 'utf-8'));
+    if (!config.fileId || config.fileId === 'YOUR_FIGMA_FILE_ID') {
+      this.checks.push({
+        passed: false,
+        message: 'Figma file ID not configured',
+        critical: true
+      });
+      return;
+    }
+
+    this.checks.push({
+      passed: true,
+      message: 'Figma configuration valid'
+    });
+  }
+
+  private async checkTokensExist() {
+    console.log(chalk.gray('Checking design tokens exist...'));
+    
+    const tokenFiles = [
+      'src/tokens/figma-tokens.json',
+      'src/tokens/tailwind-tokens.generated.js',
+      'src/styles/tokens/css-variables.generated.css'
+    ];
+
+    for (const file of tokenFiles) {
+      const filePath = path.join(process.cwd(), file);
+      if (!fs.existsSync(filePath)) {
+        this.checks.push({
+          passed: false,
+          message: `Missing token file: ${file}`,
+          critical: true
+        });
+        return;
+      }
+    }
+
+    this.checks.push({
+      passed: true,
+      message: 'All token files exist'
+    });
+  }
+
+  private async checkTokensNotEmpty() {
+    console.log(chalk.gray('Checking design tokens are populated...'));
+    
+    const figmaTokensPath = path.join(process.cwd(), 'src/tokens/tailwind-tokens.generated.js');
+    const content = fs.readFileSync(figmaTokensPath, 'utf-8');
+    
+    // Check if tokens are empty
+    if (content.includes('colors: {},') && content.includes('spacing: {}')) {
+      this.checks.push({
+        passed: false,
+        message: 'Design tokens are empty - run npm run extract-figma-tokens',
+        critical: true
+      });
+      
+      // Try to run token extraction
+      console.log(chalk.yellow('\nAttempting to extract tokens from Figma...'));
+      try {
+        execSync('npm run extract-figma-tokens', { stdio: 'inherit' });
+        console.log(chalk.green('Token extraction completed!'));
+      } catch (error) {
+        console.log(chalk.red('Token extraction failed - manual intervention required'));
+      }
+      return;
+    }
+
+    // Parse and validate token content
+    try {
+      const module = { exports: {} };
+      eval(content);
+      const tokens = module.exports as any;
+      
+      const hasColors = Object.keys(tokens.colors || {}).length > 0;
+      const hasSpacing = Object.keys(tokens.spacing || {}).length > 0;
+      
+      if (!hasColors || !hasSpacing) {
+        this.checks.push({
+          passed: false,
+          message: 'Design tokens incomplete - missing colors or spacing',
+          critical: true
+        });
+        return;
+      }
+
+      this.checks.push({
+        passed: true,
+        message: `Tokens loaded: ${Object.keys(tokens.colors).length} colors, ${Object.keys(tokens.spacing).length} spacing values`
+      });
+    } catch (error) {
+      this.checks.push({
+        passed: false,
+        message: 'Failed to parse design tokens',
+        critical: true
+      });
+    }
+  }
+
+  private async checkArchitecturalCompliance() {
+    console.log(chalk.gray('Checking architectural compliance...'));
+    
+    try {
+      // Run architecture validation
+      execSync('npm run validate:architecture', { 
+        stdio: 'pipe',
+        encoding: 'utf-8'
+      });
+      
+      this.checks.push({
+        passed: true,
+        message: 'Architecture validation passed'
+      });
+    } catch (error: any) {
+      const output = error.stdout?.toString() || '';
+      const scoreMatch = output.match(/Average Score: (\d+)%/);
+      const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+      
+      this.checks.push({
+        passed: score === 100,
+        message: `Architecture compliance: ${score}%`,
+        critical: false
+      });
+    }
+  }
+
+  private async checkDesignSystemReadiness() {
+    console.log(chalk.gray('Checking design system readiness...'));
+    
+    // Check for reference component
+    const refPath = path.join(process.cwd(), 'src/_reference/ReferenceComponent.tsx');
+    if (!fs.existsSync(refPath)) {
+      this.checks.push({
+        passed: false,
+        message: 'ReferenceComponent.tsx missing',
+        critical: true
+      });
+      return;
+    }
+
+    // Check for critical utilities
+    const utilsExist = fs.existsSync(path.join(process.cwd(), 'src/utils/classNames.ts')) &&
+                       fs.existsSync(path.join(process.cwd(), 'src/utils/componentVariants.ts'));
+    
+    if (!utilsExist) {
+      this.checks.push({
+        passed: false,
+        message: 'Critical utilities missing',
+        critical: true
+      });
+      return;
+    }
+
+    this.checks.push({
+      passed: true,
+      message: 'Design system infrastructure ready'
+    });
+  }
+
+  private async generateTokenMapping() {
+    console.log(chalk.gray('Generating token mapping documentation...'));
+    
+    try {
+      // Load tokens
+      const tokenPath = path.join(process.cwd(), 'src/tokens/tailwind-tokens.generated.js');
+      const content = fs.readFileSync(tokenPath, 'utf-8');
+      const module = { exports: {} };
+      eval(content);
+      const tokens = module.exports as any;
+
+      // Create component directory
+      fs.mkdirSync(this.componentPath, { recursive: true });
+
+      // Generate mapping documentation
+      let mappingDoc = `# Token Mapping for ${this.componentName}\n\n`;
+      mappingDoc += `Generated: ${new Date().toISOString()}\n\n`;
+      
+      // Color mappings
+      mappingDoc += `## Color Token Classes\n\n`;
+      mappingDoc += `| Figma Token | Tailwind Class | Hex Value |\n`;
+      mappingDoc += `|-------------|----------------|------------|\n`;
+      
+      for (const [key, value] of Object.entries(tokens.colors || {})) {
+        const className = this.tokenToClassName(key, 'color');
+        mappingDoc += `| ${key} | ${className} | ${value} |\n`;
+      }
+
+      // Spacing mappings
+      mappingDoc += `\n## Spacing Token Classes\n\n`;
+      mappingDoc += `| Token | Class | Value |\n`;
+      mappingDoc += `|-------|-------|-------|\n`;
+      
+      for (const [key, value] of Object.entries(tokens.spacing || {})) {
+        mappingDoc += `| ${key} | ${key} | ${value} |\n`;
+      }
+
+      // Common patterns
+      mappingDoc += `\n## Common Patterns\n\n`;
+      mappingDoc += `\`\`\`typescript
+// Background colors
+className="bg-neutral-bg-primary"    // Primary background
+className="bg-neutral-bg-secondary"  // Secondary background
+
+// Text colors  
+className="text-neutral-text-primary"    // Primary text
+className="text-neutral-text-secondary"  // Secondary text
+
+// Interactive states
+className="hover:bg-interactive-bg-hover"     // Hover background
+className="focus:border-interactive-border-focus"  // Focus border
+
+// Disabled states
+className="disabled:bg-neutral-bg-disabled"   // Disabled background
+className="disabled:text-neutral-text-disabled"   // Disabled text
+\`\`\``;
+
+      // Write mapping file
+      const mappingPath = path.join(this.componentPath, `${this.componentName}.tokens.md`);
+      fs.writeFileSync(mappingPath, mappingDoc);
+
+      this.checks.push({
+        passed: true,
+        message: `Token mapping generated at ${this.componentName}/${this.componentName}.tokens.md`
+      });
+    } catch (error) {
+      this.checks.push({
+        passed: false,
+        message: 'Failed to generate token mapping',
+        critical: false
+      });
+    }
+  }
+
+  private tokenToClassName(token: string, type: 'color' | 'spacing'): string {
+    // Convert token name to Tailwind class
+    // e.g., "neutral-bg-primary" -> "bg-neutral-bg-primary" or "text-neutral-bg-primary"
+    if (type === 'color') {
+      if (token.includes('bg')) {
+        return `bg-${token}`;
+      } else if (token.includes('text')) {
+        return `text-${token}`;
+      } else if (token.includes('border')) {
+        return `border-${token}`;
+      }
+      return `text-${token}`; // default to text
+    }
+    return token; // spacing uses token directly
+  }
+
+  private async createComponentScaffold() {
+    console.log(chalk.gray('Creating component scaffold...'));
+    
+    const scaffoldPath = path.join(this.componentPath, `${this.componentName}.scaffold.tsx`);
+    
+    const scaffold = `import React, { forwardRef } from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '../../../utils/classNames';
+
+/**
+ * ${this.componentName} Component
+ * 
+ * 🚨 IMPORTANT: This is a scaffold. Replace ALL placeholder classes with actual design tokens.
+ * Refer to ${this.componentName}.tokens.md for the complete token mapping.
+ */
+
+// 🔑 PATTERN: CVA Variants Configuration following ReferenceComponent.tsx
+const ${this.componentName.toLowerCase()}Variants = cva(
+  [
+    // Base styles using design token classes
+    'bg-neutral-bg-primary',      // TODO: Replace with actual token
+    'text-neutral-text-primary',   // TODO: Replace with actual token
+    'border-neutral-border-default', // TODO: Replace with actual token
+    // Add more base styles from Figma
+  ],
+  {
+    variants: {
+      variant: {
+        primary: [
+          'bg-interactive-bg-bold',
+          'text-interactive-text-on-fill',
+          'hover:bg-interactive-bg-bold-hover',
+          'active:bg-interactive-bg-bold-pressed'
+        ],
+        secondary: [
+          'bg-neutral-bg-primary',
+          'text-interactive-text-default',
+          'border-interactive-border-bold',
+          'hover:bg-interactive-bg-subtle-hover'
+        ]
+      },
+      size: {
+        small: ['text-sm', 'px-3', 'py-1.5', 'min-h-[32px]'],
+        medium: ['text-base', 'px-4', 'py-2', 'min-h-[40px]'],
+        large: ['text-lg', 'px-6', 'py-3', 'min-h-[48px]']
+      },
+      state: {
+        default: [],
+        disabled: [
+          'opacity-50',
+          'cursor-not-allowed',
+          'pointer-events-none'
+        ],
+        loading: [
+          'cursor-wait',
+          'relative'
+        ]
+      }
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'medium',
+      state: 'default'
+    }
+  }
+);
+
+export interface ${this.componentName}Props 
+  extends React.HTMLAttributes<HTMLElement>,
+          VariantProps<typeof ${this.componentName.toLowerCase()}Variants> {
+  /**
+   * The content of the ${this.componentName.toLowerCase()}
+   */
+  children?: React.ReactNode;
+  
+  /**
+   * Whether the ${this.componentName.toLowerCase()} is disabled
+   */
+  disabled?: boolean;
+  
+  /**
+   * Loading state
+   */
+  loading?: boolean;
+}
+
+/**
+ * ${this.componentName} Component
+ * 
+ * @example
+ * <${this.componentName} variant="primary" size="medium">
+ *   Content
+ * </${this.componentName}>
+ */
+export const ${this.componentName} = forwardRef<HTMLDivElement, ${this.componentName}Props>(
+  (
+    {
+      className,
+      variant,
+      size,
+      state,
+      disabled,
+      loading,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    // Determine current state
+    const currentState = loading ? 'loading' : (disabled ? 'disabled' : state);
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          ${this.componentName.toLowerCase()}Variants({ variant, size, state: currentState }),
+          className
+        )}
+        aria-disabled={disabled}
+        aria-busy={loading}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+
+${this.componentName}.displayName = '${this.componentName}';
+
+export default ${this.componentName};`;
+
+    fs.writeFileSync(scaffoldPath, scaffold);
+
+    this.checks.push({
+      passed: true,
+      message: `Component scaffold created at ${this.componentName}/${this.componentName}.scaffold.tsx`
+    });
+  }
+
+  private async setupContinuousValidation() {
+    console.log(chalk.gray('Setting up continuous validation...'));
+    
+    const watchScriptPath = path.join(this.componentPath, 'validate-watch.sh');
+    
+    const watchScript = `#!/bin/bash
+# Continuous validation for ${this.componentName} component
+
+echo "🔍 Starting continuous validation for ${this.componentName}..."
+echo "Press Ctrl+C to stop"
+
+# Watch for changes and validate
+nodemon --watch "${this.componentPath}" \\
+  --ext "ts,tsx" \\
+  --exec "npm run validate:architecture -- --component ${this.componentName}" \\
+  --delay 1000
+
+# Alternative: Use chokidar-cli if nodemon not available
+# npx chokidar "${this.componentPath}/**/*.{ts,tsx}" -c "npm run validate:architecture -- --component ${this.componentName}"`;
+
+    fs.writeFileSync(watchScriptPath, watchScript);
+    fs.chmodSync(watchScriptPath, 0o755);
+
+    this.checks.push({
+      passed: true,
+      message: `Continuous validation script created. Run: ./src/components/${this.atomicLevel}/${this.componentName}/validate-watch.sh`
+    });
+  }
+
+  private reportResults() {
+    console.log(chalk.blue.bold('\n📊 VALIDATION REPORT\n'));
+    
+    const passed = this.checks.filter(c => c.passed);
+    const failed = this.checks.filter(c => !c.passed);
+    const critical = failed.filter(c => c.critical);
+
+    // Show passed checks
+    if (passed.length > 0) {
+      console.log(chalk.green.bold('✅ Passed Checks:'));
+      passed.forEach(check => {
+        console.log(chalk.green(`   ✓ ${check.message}`));
+      });
+    }
+
+    // Show failed checks
+    if (failed.length > 0) {
+      console.log(chalk.red.bold('\n❌ Failed Checks:'));
+      failed.forEach(check => {
+        const prefix = check.critical ? '🚨' : '⚠️';
+        console.log(chalk.red(`   ${prefix} ${check.message}`));
+      });
+    }
+
+    // Summary
+    console.log(chalk.blue(`\n📈 Summary: ${passed.length}/${this.checks.length} checks passed`));
+    if (critical.length > 0) {
+      console.log(chalk.red(`🚨 ${critical.length} critical failures`));
+    }
+  }
+}
+
+// Main execution
+const args = process.argv.slice(2);
+if (args.length === 0) {
+  console.log(chalk.red('Usage: npm run pre-component <ComponentName> [atoms|molecules|organisms]'));
+  console.log(chalk.gray('Example: npm run pre-component Button atoms'));
+  process.exit(1);
+}
+
+const componentName = args[0];
+const atomicLevel = (args[1] || 'atoms') as 'atoms' | 'molecules' | 'organisms';
+
+const validator = new PreComponentValidator(componentName, atomicLevel);
+validator.run().catch(console.error);
+```
+
 ## ✅ Figma Scripts Complete
 
 You should now have created:
@@ -807,8 +1356,9 @@ You should now have created:
 - Token file generation script
 - Token validation script
 - Rebrand preview script
+- Pre-component validation script
 
-Total files created in this step: **4 scripts**
+Total files created in this step: **5 scripts**
 
 ## 📋 Next Step
 

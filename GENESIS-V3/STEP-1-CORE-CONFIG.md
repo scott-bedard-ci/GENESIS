@@ -49,7 +49,7 @@ This step creates all the core configuration files needed for the project.
     "vite.config.ts",
     "tsup.config.ts",
     "tailwind.config.js",
-    "postcss.config.js"
+    "postcss.config.cjs"
   ]
 }
 ```
@@ -60,16 +60,34 @@ This step creates all the core configuration files needed for the project.
 ```javascript
 /** @type {import('tailwindcss').Config} */
 
-// 🚨 CRITICAL: This file imports GENERATED token mappings
+// 🚨 CRITICAL: This file imports GENERATED token mappings from Figma
 // DO NOT hardcode any values here - everything comes from Figma
+// Storybook tokens are separate and only for stories (Welcome page, etc.)
 
-// Gracefully handle missing token file during initial setup
-let tokens = { colors: {}, spacing: {} };
+// Load PURE Figma tokens (for components)
+let figmaTokens = { colors: {}, spacing: {} };
 try {
-  tokens = require('./src/tokens/tailwind-tokens.generated.js');
+  figmaTokens = require('./src/tokens/tailwind-tokens.generated.js');
 } catch (e) {
-  console.warn('⚠️  Token file not found. Run: npm run extract-figma-tokens');
+  console.warn('⚠️  Figma token file not found. Run: npm run extract-figma-tokens');
 }
+
+// Load Storybook tokens (for stories only - NOT components)
+let storybookTokens = { colors: {}, spacing: {} };
+try {
+  storybookTokens = require('./src/tokens/storybook-tokens.js');
+} catch (e) {
+  console.warn('⚠️  Storybook token file not found. Run: npm run setup:placeholders');
+}
+
+// Merge tokens: Figma tokens take precedence over Storybook tokens
+const tokens = {
+  colors: { ...storybookTokens.colors, ...figmaTokens.colors },
+  spacing: { ...storybookTokens.spacing, ...figmaTokens.spacing },
+  fontSize: { ...storybookTokens.fontSize, ...figmaTokens.fontSize },
+  fontWeight: { ...storybookTokens.fontWeight, ...figmaTokens.fontWeight },
+  borderRadius: { ...storybookTokens.borderRadius, ...figmaTokens.borderRadius },
+};
 
 module.exports = {
   content: [
@@ -78,24 +96,25 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: tokens.colors || {},      // ALL colors from Figma - NEVER hardcode
-      spacing: tokens.spacing || {},    // ALL spacing from Figma - NEVER hardcode
-      fontSize: tokens.fontSize || {},  // ALL font sizes from Figma
-      fontFamily: tokens.fontFamily || {}, // Font families from Figma
-      fontWeight: tokens.fontWeight || {}, // Font weights from Figma
-      lineHeight: tokens.lineHeight || {}, // Line heights from Figma
-      borderRadius: tokens.borderRadius || {}, // Border radii from Figma
-      boxShadow: tokens.boxShadow || {}, // Shadows from Figma
-      // 🚨 NO HARDCODED VALUES ALLOWED
-      // Everything must reference the generated tokens object
+      colors: tokens.colors,           // Figma tokens + Storybook fallbacks
+      spacing: tokens.spacing,         // Figma tokens + Storybook fallbacks  
+      fontSize: tokens.fontSize,       // Figma tokens + Storybook fallbacks
+      fontFamily: tokens.fontFamily || {},   // Figma tokens only
+      fontWeight: tokens.fontWeight,   // Figma tokens + Storybook fallbacks
+      lineHeight: tokens.lineHeight || {},   // Figma tokens only
+      borderRadius: tokens.borderRadius, // Figma tokens + Storybook fallbacks
+      boxShadow: tokens.boxShadow || {}, // Figma tokens only
+      // 🚨 HIERARCHY: Figma tokens override Storybook tokens
+      // Storybook tokens only provide fallbacks for stories
     }
   },
   plugins: []
 }
 ```
 
-### 🚨 CREATE THIS FILE: `postcss.config.js`
+### 🚨 CREATE THIS FILE: `postcss.config.cjs`
 ```javascript
+// Note: .cjs extension required when package.json has "type": "module"
 module.exports = {
   plugins: {
     tailwindcss: {},
@@ -257,7 +276,10 @@ module.exports = {
 import type { StorybookConfig } from '@storybook/react-vite';
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(js|jsx|ts|tsx)'],
+  stories: [
+    '../src/Welcome.stories.tsx',
+    '../src/**/*.stories.@(js|jsx|ts|tsx)',
+  ],
   addons: [
     '@storybook/addon-essentials',
     '@storybook/addon-a11y',
@@ -341,6 +363,34 @@ export default preview;
     "molecules": "Molecules",
     "organisms": "Organisms"
   },
+  "iconSystem": {
+    "libraryFrame": "ICON_LIBRARY_FRAME_URL",
+    "namingConvention": "icon-{category}-{name}",
+    "standardSizes": ["16px", "24px", "32px", "48px"],
+    "exportFormat": "svg",
+    "colorVariants": ["default", "hover", "active", "disabled"]
+  },
+  "assetDiscovery": {
+    "tokenSources": {
+      "figmaVariables": true,
+      "exportedFiles": [],
+      "brandGuidelines": [],
+      "existingCSSVars": false
+    },
+    "iconSources": {
+      "hasIconLibrary": false,
+      "iconFrameUrls": [],
+      "iconNamingSystem": "",
+      "iconSizingStandards": []
+    },
+    "componentPriorities": [],
+    "figmaOrganization": {
+      "pageStructure": "",
+      "componentStructure": "",
+      "frameNaming": "",
+      "variantOrganization": ""
+    }
+  },
   "exportSettings": {
     "format": "png",
     "scale": 2,
@@ -353,14 +403,42 @@ export default preview;
 
 You should now have created:
 - TypeScript configuration (tsconfig.json, tsconfig.node.json)
-- Tailwind and PostCSS configuration
+- Tailwind and PostCSS configuration (**Note**: postcss.config.cjs extension for ES modules)
 - Jest configuration and setup
 - Build configuration (tsup)
-- Linting configuration (ESLint, Prettier)
-- Storybook configuration
+- Linting configuration (ESLint, Prettier)  
+- Storybook configuration (**Note**: Configured to show Welcome page first)
 - Figma configuration template
 
 Total files created in this step: **10**
+
+## 🚨 Important Notes
+
+### Token Architecture - CRITICAL
+**Two separate token systems maintain design system purity:**
+
+1. **`src/tokens/tailwind-tokens.generated.js`** - PURE Figma tokens only
+   - **FOR**: Components building (ONLY use these in components)
+   - **SOURCE**: Generated from Figma via `npm run extract-figma-tokens`
+   - **RULE**: Components must NEVER reference storybook tokens
+
+2. **`src/tokens/storybook-tokens.js`** - Static tokens for stories
+   - **FOR**: Storybook stories only (Welcome page, documentation)
+   - **SOURCE**: Static file with basic styling needs
+   - **RULE**: Components must NEVER use these
+
+**Tailwind merges both with Figma tokens taking precedence:**
+- Storybook tokens enable initial styling (Welcome page works)
+- Figma tokens override when available (components get real design)
+- This maintains separation while ensuring Storybook functions
+
+### PostCSS Configuration
+- File must use `.cjs` extension when package.json has `"type": "module"`
+- This prevents ES module errors during Storybook startup
+
+### Storybook Configuration  
+- Stories array prioritizes `Welcome.stories.tsx` to show welcome page first
+- This ensures users see design system documentation immediately
 
 ## 📋 Next Step
 

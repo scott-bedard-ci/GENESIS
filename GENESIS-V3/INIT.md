@@ -38,13 +38,91 @@
 - Non-critical issues reviewed daily
 - Architectural improvements tracked in VERSION-HISTORY.md
 
-## 🚨 PHASE 0: MANDATORY FIGMA TOKEN EXTRACTION
+## 🚨 PHASE 0: DESIGN SYSTEM ASSET DISCOVERY
 
-Before ANY project setup, design tokens MUST be extracted from Figma.
+Before ANY technical setup, we must catalog existing design system assets.
+
+### Critical Questions to Ask the User:
+
+#### 1. **Design Tokens Discovery**
+Ask: **"Do you have a master list or documentation of your design tokens that we can import?"**
+
+**What to look for:**
+- ✅ **Figma Variables/Tokens**: Complete token definitions in Figma
+- ✅ **Design Token JSON**: Exported token files (Design Tokens format, Style Dictionary, etc.)
+- ✅ **Design Documentation**: Spreadsheets, PDFs, or docs with color palettes, spacing scales, typography
+- ✅ **Existing CSS Variables**: CSS custom properties from current systems
+- ✅ **Style Guides**: Brand guidelines with specific values
+
+**If they have tokens:**
+- Request Figma file access for token extraction
+- Ask for any exported token files
+- Get brand guideline documents
+- Document token sources in figma.config.json
+
+**If they don't have organized tokens:**
+- Plan token extraction directly from component designs
+- Suggest creating token organization in Figma first
+- Document this gap in LEARNING-LOG.md
+
+#### 2. **Icon System Discovery**  
+Ask: **"Do you have an established icon system/library? Can you point us to the Figma frames containing your complete icon set?"**
+
+**What to look for:**
+- ✅ **Icon Library Frame**: Dedicated Figma frame with all icons
+- ✅ **Icon Components**: Figma components for icons with variants
+- ✅ **Icon Naming System**: Consistent naming conventions
+- ✅ **Icon Sizing Standards**: Standard sizes (16px, 24px, 32px, etc.)
+- ✅ **Icon Usage Guidelines**: When/how to use specific icons
+
+**If they have an icon system:**
+- Get Figma frame URLs for the complete icon library
+- Document icon naming conventions
+- Note icon sizing standards
+- Plan icon component generation from Figma
+
+**If they don't have an icon system:**
+- Document all icons found in component designs
+- Suggest creating organized icon library in Figma
+- Plan systematic icon extraction and organization
+
+#### 3. **Component Inventory Discovery**
+Ask: **"What components do you need built first? Do you have a priority list or roadmap?"**
+
+**Document:**
+- ✅ **Priority components** (what's needed immediately)
+- ✅ **Component dependencies** (which components depend on others)
+- ✅ **Usage frequency** (most-used components first)
+- ✅ **Business impact** (revenue-critical components)
+
+#### 4. **Figma Organization Discovery**
+Ask: **"How is your Figma file organized? Can you show us the structure and provide access?"**
+
+**What to document:**
+- ✅ **Page organization** (Tokens, Components, Documentation, etc.)
+- ✅ **Component structure** (Atoms, Molecules, Organisms)
+- ✅ **Frame naming conventions**
+- ✅ **Variant organization**
+- ✅ **Access permissions**
+
+### Asset Discovery Checklist:
+- [ ] Design token sources identified and documented
+- [ ] Icon system location and scope documented  
+- [ ] Component priorities established
+- [ ] Figma access and organization understood
+- [ ] figma.config.json configured with all frame references
+- [ ] LEARNING-LOG.md updated with any gaps or issues
+
+**⚠️ CRITICAL**: Do not proceed to technical setup until asset discovery is complete!
+
+## 🚨 PHASE 1: MANDATORY FIGMA TOKEN EXTRACTION
+
+After asset discovery, design tokens MUST be extracted from Figma.
 
 **Prerequisites:**
-1. Figma Design System File with complete token definitions
+1. Figma Design System File with complete token definitions (from discovery)
 2. Figma API Access for token extraction
+3. Completed asset discovery checklist
 
 **This MUST succeed before any other setup:**
 ```bash
@@ -52,7 +130,7 @@ npm run setup:extract-figma-tokens
 npm run validate:tokens-exist
 ```
 
-## 🏗️ PHASE 1: PROJECT INITIALIZATION
+## 🏗️ PHASE 2: PROJECT INITIALIZATION
 
 ### Step 1: Create Project Structure
 
@@ -145,7 +223,8 @@ npm install --save-dev \
   eslint-plugin-storybook@^0.8.0 \
   prettier@^3.2.5 \
   glob@^10.3.10 \
-  axios@^1.5.0
+  axios@^1.5.0 \
+  chalk@^5.4.1
 ```
 
 ### Step 5: Create Placeholder Token Files
@@ -176,7 +255,7 @@ This creates:
   "types": "dist/index.d.ts",
   "scripts": {
     "setup": "npm run setup:placeholders && npm run setup:validation && npm run setup:reference",
-    "setup:placeholders": "node -e \"require('fs').mkdirSync('src/tokens', {recursive:true}); require('fs').writeFileSync('src/tokens/figma-tokens.json', JSON.stringify({colors:{},spacing:{},typography:{},effects:{}},null,2)); require('fs').writeFileSync('src/tokens/tailwind-tokens.generated.js', 'module.exports = { colors: {}, spacing: {} }'); require('fs').mkdirSync('src/styles/tokens', {recursive:true}); require('fs').writeFileSync('src/styles/tokens/css-variables.generated.css', '/* Placeholder for generated CSS variables */')\"",
+    "setup:placeholders": "node -e \"require('fs').mkdirSync('src/tokens', {recursive:true}); require('fs').writeFileSync('src/tokens/figma-tokens.json', JSON.stringify({colors:{},spacing:{},typography:{},effects:{}},null,2)); require('fs').writeFileSync('src/tokens/tailwind-tokens.generated.js', 'module.exports = { colors: {}, spacing: {} }; // PURE: Only Figma tokens go here'); require('fs').writeFileSync('src/tokens/storybook-tokens.js', \\\"// 🚨 STORYBOOK ONLY - NOT for components\\n// These tokens enable Storybook stories to render properly\\n// Components must ONLY use design tokens from Figma\\n\\nmodule.exports = {\\n  colors: {\\n    // Basic color palette for Storybook stories only\\n    'gray-50': '#f9fafb',\\n    'gray-600': '#4b5563',\\n    'gray-900': '#111827',\\n    'blue-50': '#eff6ff',\\n    'blue-200': '#bfdbfe',\\n    'blue-600': '#2563eb',\\n    'blue-700': '#1d4ed8',\\n    'blue-800': '#1e40af',\\n    'blue-900': '#1e3a8a',\\n    white: '#ffffff',\\n    black: '#000000',\\n  },\\n  spacing: {\\n    // Basic spacing scale for Storybook stories only\\n    '1': '0.25rem',\\n    '2': '0.5rem',\\n    '3': '0.75rem',\\n    '4': '1rem',\\n    '6': '1.5rem',\\n    '8': '2rem',\\n    '12': '3rem',\\n  },\\n  fontSize: {\\n    // Basic font sizes for Storybook stories only\\n    'sm': '0.875rem',\\n    'base': '1rem',\\n    'lg': '1.125rem',\\n    'xl': '1.25rem',\\n    '2xl': '1.5rem',\\n    '4xl': '2.25rem',\\n  },\\n  fontWeight: {\\n    medium: '500',\\n    semibold: '600',\\n    bold: '700',\\n  },\\n  borderRadius: {\\n    lg: '0.5rem',\\n  }\\n};\\\"); require('fs').mkdirSync('src/styles/tokens', {recursive:true}); require('fs').writeFileSync('src/styles/tokens/css-variables.generated.css', '/* Placeholder for generated CSS variables */')\"",
     "setup:extract-figma-tokens": "tsx scripts/extract-figma-tokens.ts",
     "setup:validation": "tsx scripts/setup-validation.ts",
     "setup:reference": "tsx scripts/setup-reference-implementation.ts",
@@ -195,7 +274,7 @@ This creates:
     "validate:visual": "tsx scripts/validate-visual-compliance.ts",
     "validate:all": "npm run validate && npm run test && npm run type-check",
     
-    "pre-component": "npm run validate:all",
+    "pre-component": "tsx scripts/pre-component.ts",
     "post-component": "npm run validate:all && npm run visual-verify",
     
     "visual-verify": "tsx scripts/visual-verification.ts",

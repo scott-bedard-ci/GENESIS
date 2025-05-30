@@ -4,6 +4,28 @@
 
 This file helps you verify that all 40+ required files have been created correctly. Run through this checklist to ensure your Pigment-Genesis design system is fully set up.
 
+## 🚨 CRITICAL: Component Validation Workflow
+
+**MANDATORY for every component after building:**
+
+```bash
+# Step 1: Architectural compliance (MUST be 100%)
+npm run validate:architecture
+
+# Step 2: Build verification (MUST compile)
+npm run build
+
+# Step 3: Type checking (MUST pass)
+npx tsc --noEmit
+
+# Step 4: Visual verification (MUST be 95%+ accurate)
+npm run claude-visual-verify ComponentName
+```
+
+**🚨 A component is NOT complete until ALL validations pass.**
+
+This workflow prevents architectural debt and ensures design system integrity. Make sure all team members and Claude sessions follow this exactly.
+
 ## ✅ Complete File Checklist
 
 ### 📁 Configuration Files (11 files)
@@ -36,7 +58,7 @@ This file helps you verify that all 40+ required files have been created correct
 - [ ] `scripts/claude-visual-verify.ts`
 - [ ] `scripts/validate-visual-compliance.ts`
 
-### 📁 Documentation Files (8 files)
+### 📁 Documentation Files (9 files)
 - [ ] `CLAUDE.md`
 - [ ] `CLAUDE-OPUS.md`
 - [ ] `LEARNING-LOG.md`
@@ -45,8 +67,9 @@ This file helps you verify that all 40+ required files have been created correct
 - [ ] `README.md` (should already exist or be created)
 - [ ] `src/_reference/README.md` (created by setup script)
 - [ ] `GENESIS-V3/README.md` (this setup guide)
+- [ ] `GENESIS-V3/COMPONENT-TEMPLATE.md` (component structure template)
 
-### 📁 Source Files (11+ files)
+### 📁 Source Files (19+ files)
 - [ ] `src/types/tokens.ts`
 - [ ] `src/types/component.ts`
 - [ ] `src/utils/classNames.ts`
@@ -58,8 +81,14 @@ This file helps you verify that all 40+ required files have been created correct
 - [ ] `src/components/atoms/index.ts`
 - [ ] `src/components/molecules/index.ts`
 - [ ] `src/components/organisms/index.ts`
-- [ ] `src/_reference/ReferenceComponent.tsx` (created by setup script)
-- [ ] `src/_reference/README.md` (created by setup script)
+- [ ] `src/Welcome.stories.tsx` (**STORYBOOK WELCOME PAGE**)
+- [ ] `src/_reference/ReferenceComponent.tsx` (complete reference implementation)
+- [ ] `src/_reference/ReferenceComponent.figmaframes.md` (Figma documentation template)
+- [ ] `src/_reference/ReferenceComponent.stories.tsx` (story structure template)
+- [ ] `src/_reference/ReferenceComponent.test.tsx` (test organization template)
+- [ ] `src/_reference/ReferenceComponent.tokens.md` (token documentation template)
+- [ ] `src/_reference/index.ts` (export patterns)
+- [ ] `src/_reference/README.md` (reference documentation)
 
 ### 📁 Additional Files (Created by scripts)
 - [ ] `package.json` (with all scripts)
@@ -67,7 +96,7 @@ This file helps you verify that all 40+ required files have been created correct
 - [ ] `.vscode/tasks.json` (created by setup-validation.ts)
 - [ ] `.git/hooks/pre-commit` (created by setup-validation.ts)
 
-**TOTAL MINIMUM: 44+ files**
+**TOTAL MINIMUM: 52+ files**
 
 Note: The exact count depends on whether you count generated files and those created by setup scripts.
 
@@ -97,15 +126,21 @@ npm run setup:reference
 # - src/utils/classNames.ts (if not already created)
 ```
 
-### 3. Validate Token Extraction
+### 3. Validate Token Setup
 ```bash
-# Note: This requires Figma connection
-# npm run extract-figma-tokens
+# Run setup to create token structure
+npm run setup:placeholders
 
-# For now, create placeholder token files manually:
-mkdir -p src/tokens
-echo '{"colors":{},"spacing":{},"typography":{},"effects":{}}' > src/tokens/figma-tokens.json
-echo 'module.exports = { colors: {}, spacing: {} }' > src/tokens/tailwind-tokens.generated.js
+# This creates TWO separate token files:
+# 1. src/tokens/tailwind-tokens.generated.js (PURE - Figma only, starts empty)
+# 2. src/tokens/storybook-tokens.js (STATIC - enables Storybook styling)
+
+# Verify the separation:
+echo "=== FIGMA TOKENS (should be empty initially) ==="
+cat src/tokens/tailwind-tokens.generated.js
+
+echo "=== STORYBOOK TOKENS (should have basic colors/spacing) ==="
+cat src/tokens/storybook-tokens.js | head -10
 ```
 
 ### 4. Run All Validations
@@ -128,8 +163,23 @@ npm run setup:validation
 # Start Storybook
 npm run dev
 
+# Verify Storybook loads with Welcome page
+# Should open http://localhost:6006 with "Welcome" story first
+
 # In another terminal, run tests
 npm test
+```
+
+### 6. Validate Storybook Welcome Page
+```bash
+# Start Storybook and verify welcome page appears first
+npm run dev
+
+# Check that:
+# - Storybook loads successfully
+# - "Welcome" story appears first in sidebar
+# - Welcome page displays design system information
+# - Navigation works between stories
 ```
 
 ## 🚨 Common Issues & Fixes
@@ -152,11 +202,29 @@ If TypeScript complains about missing types:
 npm install --save-dev @types/node @types/react @types/react-dom
 ```
 
-### Tailwind Not Working
-If Tailwind classes aren't applying:
-1. Check that `postcss.config.js` exists
-2. Verify `tailwind.config.js` is properly configured
-3. Ensure `src/styles/globals.css` is imported in Storybook preview
+### Tailwind Not Working / Storybook Styling Broken
+If Tailwind classes aren't applying or Storybook shows unstyled content:
+
+1. **Most Common**: Missing Storybook tokens prevent Tailwind from generating utility classes
+   - Run `npm run setup:placeholders` to create both token files
+   - Verify `src/tokens/storybook-tokens.js` contains actual color/spacing values
+   - Note: `src/tokens/tailwind-tokens.generated.js` should be empty initially (Figma tokens only)
+
+2. **Token Architecture Issues**:
+   ```bash
+   # Check that both token files exist with correct content:
+   ls -la src/tokens/
+   # Should show: storybook-tokens.js AND tailwind-tokens.generated.js
+   
+   # Storybook tokens should have values, Figma tokens should be empty
+   grep "gray-900" src/tokens/storybook-tokens.js  # Should find color
+   grep "gray-900" src/tokens/tailwind-tokens.generated.js  # Should NOT find (empty)
+   ```
+
+3. Check that `postcss.config.cjs` exists (not `.js` - must be `.cjs` for ES modules)
+4. Verify `tailwind.config.js` merges both token sources properly
+5. Ensure `src/styles/globals.css` is imported in Storybook preview
+6. Restart Storybook after token changes: `npm run dev`
 
 ### Scripts Not Found
 If npm scripts fail:
@@ -167,13 +235,22 @@ If npm scripts fail:
 ## 📊 Success Criteria
 
 Your setup is complete when:
-- ✅ All 40+ files are created
-- ✅ Placeholder token files exist (prevents build errors)
+- ✅ All 45+ files are created
+- ✅ **Token separation is correct**: 
+  - `src/tokens/storybook-tokens.js` has functional styling values
+  - `src/tokens/tailwind-tokens.generated.js` is empty (Figma tokens only)
+- ✅ **Asset discovery documented**: figma.config.json contains:
+  - Design token sources and formats
+  - Icon system information and frame references
+  - Component priorities and roadmap
+  - Figma organization structure
 - ✅ CLAUDE.md, CLAUDE-OPUS.md, and README.md copied to root from GENESIS-V3
 - ✅ `npm run validate:architecture` passes
 - ✅ `npm run dev` starts Storybook successfully
+- ✅ **Storybook shows Welcome page first with complete documentation**
 - ✅ `npm test` runs without errors
 - ✅ ReferenceComponent.tsx scores 100% on validation
+- ✅ **Design system purity maintained**: Components will ONLY use Figma tokens
 
 ## 🚨 CRITICAL FINAL STEP
 
@@ -191,10 +268,35 @@ Without this step, Claude will not have access to the full instructions!
 Once all checks pass, your Pigment-Genesis design system is ready for component development!
 
 ### Next Steps:
-1. Connect to Figma and extract real design tokens
-2. Start building components using the established patterns
-3. Follow the workflow in CONTRIBUTING.md
-4. Document discoveries in LEARNING-LOG.md
+
+#### 1. **First-Time Asset Discovery**
+Prompt Claude: `I've completed the GENESIS-V3 bootstrap. Let's start with asset discovery.`
+
+Claude will guide you through:
+- Design token sources (Figma Variables, JSON exports, etc.)
+- Icon system location in Figma
+- Component priorities and roadmap
+- Figma file organization
+
+#### 2. **Import Design Tokens (If Available)**
+If you have exported tokens:
+```
+Here are my exported design tokens: [paste JSON/CSS/Style Dictionary]
+Please import these into the design system.
+```
+
+#### 3. **Extract Icon System**
+```
+Here's my icon library in Figma: [paste Figma URL]
+Please extract all icons and create the icon system.
+```
+
+#### 4. **Build Your First Component**
+```
+I'm ready to add a new component.
+Component: Button
+Figma frames: [paste URLs]
+```
 
 Remember: **Quality over speed. Every component must be perfect.**
 

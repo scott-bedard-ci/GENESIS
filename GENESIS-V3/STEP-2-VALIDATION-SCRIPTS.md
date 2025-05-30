@@ -2,6 +2,19 @@
 
 This step creates all validation and setup scripts. These are CRITICAL - the system won't work without them.
 
+## 🚨 CRITICAL: Mandatory Component Validation Workflow
+
+**EVERY component MUST follow this validation sequence immediately after building:**
+
+1. **`npm run validate:architecture`** - MUST achieve 100% compliance
+2. **`npm run build`** - MUST compile without errors  
+3. **`npx tsc --noEmit`** - MUST pass type checking
+4. **`npm run claude-visual-verify ComponentName`** - MUST achieve 95%+ pixel accuracy
+
+**🚨 A component is NOT complete until ALL validations pass. No exceptions.**
+
+This prevents architectural debt and ensures design system integrity. The scripts below implement these validation checks.
+
 ## Component Architecture Validation
 
 ### 🚨 CREATE THIS FILE: `scripts/validate-component-architecture.ts`
