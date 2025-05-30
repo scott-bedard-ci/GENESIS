@@ -46,15 +46,18 @@ This file helps you verify that all 40+ required files have been created correct
 - [ ] `src/_reference/README.md` (created by setup script)
 - [ ] `GENESIS-V3/README.md` (this setup guide)
 
-### 📁 Source Files (8+ files)
+### 📁 Source Files (11+ files)
 - [ ] `src/types/tokens.ts`
 - [ ] `src/types/component.ts`
 - [ ] `src/utils/classNames.ts`
 - [ ] `src/utils/componentVariants.ts`
-- [ ] `src/utils/storybook.ts`
+- [ ] `src/utils/storybook.tsx` (note: .tsx for JSX support)
 - [ ] `src/styles/globals.css`
 - [ ] `src/index.ts`
 - [ ] `src/components/index.ts`
+- [ ] `src/components/atoms/index.ts`
+- [ ] `src/components/molecules/index.ts`
+- [ ] `src/components/organisms/index.ts`
 - [ ] `src/_reference/ReferenceComponent.tsx` (created by setup script)
 - [ ] `src/_reference/README.md` (created by setup script)
 
@@ -64,7 +67,7 @@ This file helps you verify that all 40+ required files have been created correct
 - [ ] `.vscode/tasks.json` (created by setup-validation.ts)
 - [ ] `.git/hooks/pre-commit` (created by setup-validation.ts)
 
-**TOTAL MINIMUM: 40+ files**
+**TOTAL MINIMUM: 44+ files**
 
 Note: The exact count depends on whether you count generated files and those created by setup scripts.
 
@@ -166,10 +169,22 @@ If npm scripts fail:
 Your setup is complete when:
 - ✅ All 40+ files are created
 - ✅ Placeholder token files exist (prevents build errors)
+- ✅ CLAUDE.md, CLAUDE-OPUS.md, and README.md copied to root from GENESIS-V3
 - ✅ `npm run validate:architecture` passes
 - ✅ `npm run dev` starts Storybook successfully
 - ✅ `npm test` runs without errors
 - ✅ ReferenceComponent.tsx scores 100% on validation
+
+## 🚨 CRITICAL FINAL STEP
+
+**Copy the comprehensive documentation files to the root:**
+```bash
+cp GENESIS-V3/CLAUDE.md ./CLAUDE.md
+cp GENESIS-V3/CLAUDE-OPUS.md ./CLAUDE-OPUS.md
+cp GENESIS-V3/README-PROJECT.md ./README.md
+```
+
+Without this step, Claude will not have access to the full instructions!
 
 ## 🎉 Setup Complete!
 

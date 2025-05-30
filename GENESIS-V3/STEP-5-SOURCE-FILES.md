@@ -436,7 +436,7 @@ export function createCompoundVariant<T extends Record<string, any>>(
 }
 ```
 
-### 🚨 CREATE THIS FILE: `src/utils/storybook.ts`
+### 🚨 CREATE THIS FILE: `src/utils/storybook.tsx`
 ```typescript
 /**
  * Storybook utility functions
@@ -847,16 +847,53 @@ export * from './molecules';
 export * from './organisms';
 ```
 
+### 🚨 CREATE THIS FILE: `src/components/atoms/index.ts`
+```typescript
+/**
+ * Atom components - Basic building blocks
+ * Export all atom components here
+ */
+
+// Components will be added here as they are created
+// Example: export * from './Button';
+export {};
+```
+
+### 🚨 CREATE THIS FILE: `src/components/molecules/index.ts`
+```typescript
+/**
+ * Molecule components - Composed from atoms
+ * Export all molecule components here
+ */
+
+// Components will be added here as they are created
+// Example: export * from './SearchBar';
+export {};
+```
+
+### 🚨 CREATE THIS FILE: `src/components/organisms/index.ts`
+```typescript
+/**
+ * Organism components - Complex UI sections
+ * Export all organism components here
+ */
+
+// Components will be added here as they are created
+// Example: export * from './Header';
+export {};
+```
+
 ## ✅ Source Files Complete
 
 You should now have created:
 - Type definitions for tokens and components
 - Utility functions for className handling and variants
-- Storybook utility helpers
+- Storybook utility helpers (note: .tsx extension for JSX support)
 - Global CSS styles with design token imports
-- Index files for clean exports
+- Main index files for clean exports
+- Component category index files (atoms, molecules, organisms)
 
-Total files created in this step: **6 files**
+Total files created in this step: **9 files**
 
 ## 📋 Next Step
 

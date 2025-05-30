@@ -2,6 +2,17 @@
 
 This step creates visual verification scripts and all Claude instruction/documentation files.
 
+## 🚨 CRITICAL: Documentation Files Must Be Copied
+
+The CLAUDE.md and CLAUDE-OPUS.md files created in this step contain the FULL instructions for the design system. These MUST be copied to the project root directory, not just created as minimal stubs.
+
+**After creating all files in this step, copy these to the root:**
+```bash
+cp GENESIS-V3/CLAUDE.md ./CLAUDE.md
+cp GENESIS-V3/CLAUDE-OPUS.md ./CLAUDE-OPUS.md
+cp GENESIS-V3/README-PROJECT.md ./README.md
+```
+
 ## Visual Verification Script
 
 ### 🚨 CREATE THIS FILE: `scripts/visual-verification.ts`
@@ -1353,19 +1364,36 @@ npm run claude-visual-verify    # Capture for Claude analysis
 Your commitment to quality helps us build a design system that truly represents CustomInk's brand. Remember: **perfection is the only acceptable standard**.
 ```
 
+### 🚨 CREATE THIS FILE: `GENESIS-V3/README-PROJECT.md`
+Create the comprehensive project README that will be copied to the root. See the full content in the GENESIS-V3 folder.
+
 ## ✅ Scripts and Documentation Complete
 
 You should now have created:
 - Visual verification script
-- Claude visual verification script
+- Claude visual verification script  
 - Visual compliance validation script
-- CLAUDE.md (implementer instructions)
-- CLAUDE-OPUS.md (architect instructions)
+- CLAUDE.md (FULL implementer instructions - will be copied to root)
+- CLAUDE-OPUS.md (FULL architect instructions - will be copied to root)
 - LEARNING-LOG.md (discovery documentation)
 - VERSION-HISTORY.md (architectural decisions)
 - CONTRIBUTING.md (team guide)
+- README-PROJECT.md (project README - will be copied to root)
 
-Total files created in this step: **8 files**
+Total files created in this step: **9 files**
+
+## 🚨 IMPORTANT: Copy Documentation to Root
+
+After creating all files, copy the comprehensive documentation to the root:
+
+```bash
+# Copy the full instruction files to the root directory
+cp GENESIS-V3/CLAUDE.md ./CLAUDE.md
+cp GENESIS-V3/CLAUDE-OPUS.md ./CLAUDE-OPUS.md
+cp GENESIS-V3/README-PROJECT.md ./README.md
+```
+
+This ensures Claude has access to the complete instructions, not just the minimal stubs.
 
 ## 📋 Next Step
 

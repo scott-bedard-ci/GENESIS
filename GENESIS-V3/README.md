@@ -38,10 +38,10 @@ GENESIS-V3 splits the setup into manageable files that Claude can read without t
 After completing all steps, you should have:
 - [ ] 11 script files in `/scripts/`
 - [ ] 11 configuration files in root (including .gitignore)
-- [ ] 8 documentation files (including READMEs)
-- [ ] 8+ source files in `/src/` (including reference files)
+- [ ] 9 documentation files (including READMEs and GENESIS-V3 docs)
+- [ ] 11+ source files in `/src/` (including reference files and index files)
 - [ ] 2 Storybook configs
-- [ ] **Total: 40+ files minimum**
+- [ ] **Total: 44+ files minimum**
 
 Note: Additional files are created by setup scripts (e.g., ReferenceComponent.tsx, git hooks)
 

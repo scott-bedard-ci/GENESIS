@@ -265,3 +265,16 @@ You should now have:
 ## 📋 Next Step
 
 👉 **Continue to [STEP-1-CORE-CONFIG.md](./STEP-1-CORE-CONFIG.md)**
+
+## 🚨 Final Step (After All Steps Complete)
+
+After completing all GENESIS-V3 steps, copy the comprehensive documentation to the root:
+
+```bash
+# CRITICAL: Copy full instruction files from GENESIS-V3 to root
+cp GENESIS-V3/CLAUDE.md ./CLAUDE.md
+cp GENESIS-V3/CLAUDE-OPUS.md ./CLAUDE-OPUS.md  
+cp GENESIS-V3/README-PROJECT.md ./README.md
+```
+
+This ensures Claude has the complete instructions, not minimal stubs!
