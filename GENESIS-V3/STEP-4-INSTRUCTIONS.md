@@ -534,10 +534,10 @@ async function validateVisualCompliance() {
       result.issues.push('No visual regression tests');
     }
     
-    // Check for .figmaframes.md file
+    // Check for ComponentName.figmaframes.md file
     const figmaFramesFile = path.join(componentDir, `${componentName}.figmaframes.md`);
     if (!fs.existsSync(figmaFramesFile)) {
-      result.issues.push('Missing .figmaframes.md documentation');
+      result.issues.push('Missing ComponentName.figmaframes.md documentation');
     }
     
     results.push(result);
@@ -569,7 +569,7 @@ async function validateVisualCompliance() {
     console.log('1. Capture screenshots for all components');
     console.log('2. Add Figma reference images');
     console.log('3. Create visual regression tests');
-    console.log('4. Document Figma frames in .figmaframes.md');
+    console.log('4. Document Figma frames in ComponentName.figmaframes.md');
     process.exit(1);
   } else {
     console.log('\n✅ All components meet visual compliance standards!');
@@ -658,7 +658,7 @@ When the user says they're ready to add a new component:
 3. **🚨 CRITICAL FIRST STEP: Capture Figma Node IDs IMMEDIATELY**
    - **IMMEDIATELY** call `get_code_for_node_or_selection` to extract Node ID from response
    - **IMMEDIATELY** call `get_image_for_node_or_selection` to capture frame image  
-   - **IMMEDIATELY** create `.figmaframes.md` file with captured Node IDs
+   - **IMMEDIATELY** create `ComponentName.figmaframes.md` file in component directory (NOT project root)
    - **This MUST happen BEFORE any component building** to prevent Node ID loss
 4. **Analyze designs thoroughly** using the Figma MCP connection with COMPLETE property extraction
 5. **🔍 CRITICAL: Extract EVERY design specification** following the comprehensive extraction guide:
